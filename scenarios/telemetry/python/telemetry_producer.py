@@ -10,6 +10,9 @@ import paho.mqtt.client as mqtt
 import ssl
 import threading
 import random
+import json
+from datetime import datetime, timedelta
+
 
 parser = ArgumentParser()
 parser.add_argument("--env-file", help="path to the .env file to use")
@@ -96,6 +99,79 @@ def create_mqtt_client(client_id, connection_settings):
         mqtt_client.tls_set_context(context)
     return mqtt_client
 
+# List of brands and models for random selection
+BRANDS_MODELS = {
+    "BMW": ["3 Series", "5 Series", "X5"],
+    "Mercedes": ["C-Class", "E-Class", "GLA"],
+    "Peugeot": ["208", "3008", "5008"],
+    "Renault": ["Clio", "Megane", "Captur"],
+    "Fiat": ["500", "Panda", "Tipo"],
+    "Toyota": ["Camry", "Corolla", "RAV4"],
+    "Honda": ["Civic", "Accord", "CR-V"],
+    "Mazda": ["CX-5", "Mazda3", "MX-5"],
+    "Kia": ["Sorento", "Sportage", "Rio"],
+    "BYD": ["Han", "Atto 3", "Tang"],
+    "Seat": ["Ibiza", "Leon", "Arona"],
+    "Dacia": ["Duster", "Sandero", "Jogger"],
+    "Ford": ["F-150", "Focus", "Explorer"],
+    "Tesla": ["Model S", "Model 3", "Model X"]
+}
+
+def random_location():
+    return {
+        "latitude": round(random.uniform(-90, 90), 6),
+        "longitude": round(random.uniform(-180, 180), 6)
+    }
+
+def random_tire_pressure():
+    return {
+        "front_left": random.randint(30, 36),
+        "front_right": random.randint(30, 36),
+        "rear_left": random.randint(30, 36),
+        "rear_right": random.randint(30, 36)
+    }
+
+def random_diagnostics(is_electric=False):
+    diagnostics = {
+        "engine_temp": random.randint(70, 120),
+        "battery_voltage": round(random.uniform(12.0, 14.0), 1),
+        "tire_pressure": random_tire_pressure()
+    }
+    if is_electric:
+        diagnostics.pop("engine_temp")
+        diagnostics["battery_temp"] = random.randint(20, 40)
+        diagnostics["motor_temp"] = random.randint(50, 80)
+    return diagnostics
+
+def generate_vehicle_data(vehicle_count=5):
+    vehicles = []
+    for _ in range(vehicle_count):
+        brand = random.choice(list(BRANDS_MODELS.keys()))
+        model = random.choice(BRANDS_MODELS[brand])
+        year_of_manufacture = random.randint(2000, 2024)
+        vin = ''.join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=17))
+        is_electric = brand == "Tesla" or brand == "BYD"
+        timestamp = datetime.utcnow() - timedelta(minutes=random.randint(0, 120))
+        
+        vehicle = {
+            "brand": brand,
+            "model": model,
+            "year_of_manufacture": year_of_manufacture,
+            "vin": vin,
+            "telemetry": {
+                "timestamp": timestamp.isoformat() + "Z",
+                "location": random_location(),
+                "speed": random.randint(0, 120),
+                "engine_status": "running" if not is_electric else None,
+                "fuel_level": round(random.uniform(0, 100), 1) if not is_electric else None,
+                "battery_level": round(random.uniform(0, 100), 1) if is_electric else None,
+                "odometer": round(random.uniform(0, 200000), 1),
+                "diagnostics": random_diagnostics(is_electric)
+            }
+        }
+        vehicles.append(vehicle)
+    return vehicles
+
 def main():
     connection_settings = cs.get_connection_settings(args.env_file)
     if not connection_settings["MQTT_CLEAN_SESSION"]:
@@ -130,11 +206,20 @@ def main():
         # PUBLISH
         topic = "vehicles/{client_id}/position".format(client_id=client_id)
         while True:
-            lat = round(random.uniform(-90,90),6)
-            lon = round(random.uniform(-180,180),6)
-            # do a random selction from latitude and longitude
-            p1 = Point(lat, lon)
-            payload = str(p1)
+            # lat = round(random.uniform(-90,90),6)
+            # lon = round(random.uniform(-180,180),6)
+            # # do a random selction from latitude and longitude
+            # p1 = Point(lat, lon)
+            # payload = str(p1)
+
+            # Generate sample data
+            sample_data = {
+                "vehicles": generate_vehicle_data(vehicle_count=10)
+            }
+
+            payload = str(sample_data)
+
+            
             publish_result = mqtt_client.publish(topic, payload)
             print(f"Sending publish with payload \"{payload}\" on topic \"{topic}\" with message id {publish_result.mid}")
             time.sleep(10)
