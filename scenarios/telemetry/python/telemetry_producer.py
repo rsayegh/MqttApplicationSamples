@@ -214,7 +214,7 @@ def main():
 
             # Generate sample data
             sample_data = {
-                "vehicles": generate_vehicle_data(vehicle_count=10)
+                "vehicles": generate_vehicle_data(vehicle_count=1)
             }
 
             payload = str(sample_data)
