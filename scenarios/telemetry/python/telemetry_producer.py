@@ -144,33 +144,59 @@ def random_diagnostics(is_electric=False):
     return diagnostics
 
 def generate_vehicle_data(vehicle_count=5):
-    vehicles = []
-    for _ in range(vehicle_count):
-        brand = random.choice(list(BRANDS_MODELS.keys()))
-        model = random.choice(BRANDS_MODELS[brand])
-        year_of_manufacture = random.randint(2000, 2024)
-        vin = ''.join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=17))
-        is_electric = brand == "Tesla" or brand == "BYD"
-        timestamp = datetime.utcnow() - timedelta(minutes=random.randint(0, 120))
+    # vehicles = []
+    # for _ in range(vehicle_count):
+    #     brand = random.choice(list(BRANDS_MODELS.keys()))
+    #     model = random.choice(BRANDS_MODELS[brand])
+    #     year_of_manufacture = random.randint(2000, 2024)
+    #     vin = ''.join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=17))
+    #     is_electric = brand == "Tesla" or brand == "BYD"
+    #     timestamp = datetime.utcnow() - timedelta(minutes=random.randint(0, 120))
         
-        vehicle = {
-            "brand": brand,
-            "model": model,
-            "year_of_manufacture": year_of_manufacture,
-            "vin": vin,
-            "telemetry": {
-                "timestamp": timestamp.isoformat() + "Z",
-                "location": random_location(),
-                "speed": random.randint(0, 120),
-                "engine_status": "running" if not is_electric else None,
-                "fuel_level": round(random.uniform(0, 100), 1) if not is_electric else None,
-                "battery_level": round(random.uniform(0, 100), 1) if is_electric else None,
-                "odometer": round(random.uniform(0, 200000), 1),
-                "diagnostics": random_diagnostics(is_electric)
-            }
+    #     vehicle = {
+    #         "brand": brand,
+    #         "model": model,
+    #         "year_of_manufacture": year_of_manufacture,
+    #         "vin": vin,
+    #         "telemetry": {
+    #             "timestamp": timestamp.isoformat() + "Z",
+    #             "location": random_location(),
+    #             "speed": random.randint(0, 120),
+    #             "engine_status": "running" if not is_electric else None,
+    #             "fuel_level": round(random.uniform(0, 100), 1) if not is_electric else None,
+    #             "battery_level": round(random.uniform(0, 100), 1) if is_electric else None,
+    #             "odometer": round(random.uniform(0, 200000), 1),
+    #             "diagnostics": random_diagnostics(is_electric)
+    #         }
+    #     }
+    #     vehicles.append(vehicle)
+    # return vehicles
+
+    brand = random.choice(list(BRANDS_MODELS.keys()))
+    model = random.choice(BRANDS_MODELS[brand])
+    year_of_manufacture = random.randint(2000, 2024)
+    vin = ''.join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=17))
+    is_electric = brand == "Tesla" or brand == "BYD"
+    timestamp = datetime.utcnow() - timedelta(minutes=random.randint(0, 120))
+    
+    vehicle = {
+        "brand": brand,
+        "model": model,
+        "year_of_manufacture": year_of_manufacture,
+        "vin": vin,
+        "telemetry": {
+            "timestamp": timestamp.isoformat() + "Z",
+            "location": random_location(),
+            "speed": random.randint(0, 120),
+            "engine_status": "running" if not is_electric else None,
+            "fuel_level": round(random.uniform(0, 100), 1) if not is_electric else None,
+            "battery_level": round(random.uniform(0, 100), 1) if is_electric else None,
+            "odometer": round(random.uniform(0, 200000), 1),
+            "diagnostics": random_diagnostics(is_electric)
         }
-        vehicles.append(vehicle)
-    return vehicles
+    }   
+
+    return vehicle 
 
 def main():
     connection_settings = cs.get_connection_settings(args.env_file)
